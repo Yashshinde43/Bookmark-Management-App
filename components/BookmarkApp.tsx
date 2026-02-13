@@ -140,11 +140,15 @@ export default function BookmarkApp() {
     setSubmitting(true);
     setError(null);
 
-    const { error } = await supabase.from("bookmarks").insert({
-      url: url.trim(),
-      title: title.trim(),
-      user_id: user.id,
-    });
+    const { data, error } = await supabase
+      .from("bookmarks")
+      .insert({
+        url: url.trim(),
+        title: title.trim(),
+        user_id: user.id,
+      })
+      .select()
+      .single();
 
     setSubmitting(false);
 
@@ -152,6 +156,10 @@ export default function BookmarkApp() {
       console.error(error);
       setError("Failed to add bookmark.");
       return;
+    }
+
+    if (data) {
+      setBookmarks((previous) => [data as Bookmark, ...previous]);
     }
 
     setUrl("");
@@ -171,7 +179,10 @@ export default function BookmarkApp() {
     if (error) {
       console.error(error);
       setError("Failed to delete bookmark.");
+      return;
     }
+
+    setBookmarks((previous) => previous.filter((bookmark) => bookmark.id !== id));
   };
 
   if (loading) {
@@ -312,7 +323,7 @@ export default function BookmarkApp() {
               value={url}
               onChange={(event) => setUrl(event.target.value)}
               placeholder="https://example.com"
-              className="w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none ring-0 transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10"
+                className="w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-0 transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10"
               required
             />
           </div>
@@ -325,7 +336,7 @@ export default function BookmarkApp() {
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="My favorite article"
-              className="w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none ring-0 transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10"
+                className="w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-0 transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10"
               required
             />
           </div>
